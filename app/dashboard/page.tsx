@@ -15,7 +15,9 @@ export const dynamic = 'force-dynamic'
 export default function Dashboard() {
   const { user, isAuthenticated } = useAuth()
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ? createClientComponentClient()
+    : null
   const [loading, setLoading] = useState(true)
   const [tickets, setTickets] = useState<any[]>([])
   const [transactions, setTransactions] = useState<any[]>([])
@@ -27,7 +29,10 @@ export default function Dashboard() {
     }
 
     const fetchData = async () => {
-      if (!user?.id) return
+      if (!user?.id || !supabase) {
+        setLoading(false)
+        return
+      }
 
       // Fetch tickets
       const { data: ticketsData } = await supabase
